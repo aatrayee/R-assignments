@@ -1,0 +1,141 @@
+---
+title:  "Sample errors and sampling bias"
+output:
+  pdf_document:
+    keep_tex: no
+    latex_engine: xelatex
+    number_sections: yes
+  html_document:
+    toc: yes
+  word_document: default
+fontsize: 9pt
+urlcolor: blue
+header-includes:
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \usepackage{multimedia}
+- \newcommand{\subspace}[1]{\mathcal{#1}}    
+- \newcommand{\field}[1]{\mathbb{#1}}
+- \newcommand{\Reals}{\field{R}}
+- \newcommand{\Integers}{\field{Z}} 
+- \newcommand{\Naturals}{\field{N}}
+- \newcommand{\Complex}{\field{C}}
+- \newcommand{\Rationals}{\field{Q}}
+- \newcommand{\widebar}[1]{\overline{#1}}
+- \newcommand{\wig}[1]{\tilde{#1}}
+- \newcommand{\bigwig}[1]{\widetilde{#1}}
+- \newcommand{\pop}[1]{\mathcal{#1}}
+- \newcommand{\samp}[1]{\mathcal{#1}}
+- \newcommand{\given}{~\vline~}
+- \newcommand{\indep}{\bot\hspace{-.6em}\bot}
+- \newcommand{\notindep}{\bot\hspace{-.6em}\bot\hspace{-0.75em}/\hspace{.4em}}
+- \newcommand{\depend}{\Join}
+- \newcommand{\notdepend}{\Join\hspace{-0.9 em}/\hspace{.4em}}
+- \newcommand{\imply}{\Longrightarrow}
+- \newcommand{\notimply}{\Longrightarrow \hspace{-1.5em}/ \hspace{0.8em}}
+- \DeclareMathOperator*{\argmin}{arg\,min}
+- \DeclareMathOperator*{\argmax}{arg\,max}
+- \DeclareMathOperator*{\Ave}{Ave\,}
+- \newcommand{\abs}[1]{\lvert {#1} \rvert} 
+- \newcommand{\code}[1]{\texttt{#1}}
+- \newcommand*{\R}{\textsf{R}}
+- \newcommand*{\RStudio}{\textsf{RStudio}}
+- \newcommand*{\RMarkdown}{\textsf{RMarkdown}}
+- \newcommand*{\loon}{\textsf{loon}}
+- \newcommand*{\Loon}{\textsf{Loon}}
+- \newcommand*{\Grid}{\textsf{Grid}}
+- \newcommand*{\Python}{\textsf{Python}}
+- \newcommand*{\Tcl}{\textsf{Tcl}}
+- \newcommand{\pkg}[1]{\textsf{#1}}
+- \newcommand{\ve}[1]{\mathbf{#1}}         
+- \newcommand{\sv}[1]{\boldsymbol{#1}}   
+- \newcommand{\m}[1]{\mathbf{#1}}      
+- \newcommand{\sm}[1]{\boldsymbol{#1}}  
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \newcommand{\norm}[1]{||{#1}||}
+- \newcommand{\inverse}[1]{{#1}^{-1}}
+- \newcommand*{\mvec}{\operatorname{vec}}
+- \newcommand*{\trace}{\operatorname{trace}}
+- \newcommand*{\rank}{\operatorname{rank}}
+- \newcommand*{\diag}{\operatorname{diag}}
+- \newcommand*{\vspan}{\operatorname{span}}
+- \newcommand*{\rowsp}{\operatorname{rowsp}}
+- \newcommand*{\colsp}{\operatorname{colsp}}
+- \newcommand*{\svd}{\operatorname{svd}}
+- \newcommand{\degrees}{$^{\circ}$}
+- \newcommand{\permpause}{\pause}
+- \newcommand{\togglepause}{}
+- \newcommand{\suchthat}{~:~}
+- \newcommand{\st}{~:~} 
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, 
+               warning = FALSE,
+               message = FALSE,
+               fig.align = "center", 
+               fig.width = 6, 
+               fig.height = 5,
+               out.height = "40%")
+set.seed(12314159)
+# Number of characters width in printing.
+options(width = 72)
+
+```
+
+
+
+---
+
+**8 marks**
+
+Consider a population $\pop{P}$ of $N$ units $u \in \pop{P}$ and suppose that on each unit we have the value of the variate $y_u = y(u)  ~\forall u \in \pop{P}$.  Without loss of generality, we will take $u = 1, \ldots, N$ and
+denote the ordered variate values in the population $\pop{P}$ by 
+\[y_{(1)} \le y_{(2)} \le y_{(3)} \le \cdots \le y_{(N-1)} \le y_{(N)}.\]
+
+Consider only samples $\samp{S} \subset \pop{P}$ of $n$ distinct units $u \in \pop{P}$.
+
+a.  *(1 mark)* Explain why, no matter what the attribute, when $n = N$, the sample error must be zero.  (This is sometimes called Fisher consistency.)
+
+     Since $\pop{P}$ consists of $N$ units $u$ . Hence $\pop{P}$ has $N$ number of units and 
+     $\samp{S} \subset \pop{P}$ 
+     
+     When $n = N$, $\samp{S} = \pop{P}$ 
+   
+   \[sampleError = a(\samp{S}) - a(\pop{P})\] 
+   \[sampleError = a(\samp{S}) - a(\pop{S})\ = 0\]
+   
+b. *(2 marks)* Suppose the attribute of interest is 
+   \[a_{min}(\pop{P}) = \min_{u \in \pop{P}} ~y(u)\]
+   What is the largest possible sample error?  And what sample $\samp{S}$ would produce it?.
+   
+   (If it helps, assume also that $y_i = y_j \iff i = j$ for all $i$ and $j$ in the population $\pop{P}$ -- i.e. no tied $y$ values.)
+   
+   To get the largest possible sample error, we consider the largest sample value = $y_{(N)}$   Since \[a_{min}(\pop{P}) = \min_{u \in \pop{P}} ~y(u)\]
+   \[a_{min}(\pop{P}) = ~y_{(1)}\]
+   \[sampleError = a(\samp{S}) - a(\pop{P}) = ~y_{(N)}\ - ~y_{(1)}\]
+   
+
+c. *(4 marks)*  Suppose the attribute of interest is now
+   \[a_k(\pop{P}) =  \frac{1}{N} \sum_{u \in \pop{P}} y_u^k\]
+   for some $k > 0$ and let $\pop{C}$ denote the set of size $N_{\pop{C}}$ containing all possible samples $\samp{S}$ of $n$ distinct units from $\pop{P}$.
+   
+   Prove that 
+   \[\frac{1}{N_{\pop{C}}}\sum_{\samp{S} \in \pop{C}} a_k(\samp{S}) = a_k(\pop{P}).\]
+   
+   
+d. *(1 mark)* Given the result in part (c) is true, show that the *sampling bias* for these attributes is zero when the *sampling plan* is *simple random sampling* (without replacement).
+
+   
+   \[samplingBias = \frac{1}{N_{\pop{C}}}\sum_{\samp{S} \in \pop{C}} a_k(\samp{S}) - a_k(\pop{P})\]
+   \[samplingBias = a_k(\pop{P}) - a_k(\pop{P})\ = 0\]
+    
+
+   
+
+
+
+   

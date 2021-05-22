@@ -1,0 +1,392 @@
+---
+title:  "Confidence Intervals"
+output:
+  pdf_document:
+    keep_tex: no
+    latex_engine: xelatex
+    number_sections: yes
+  html_document:
+    toc: yes
+  word_document: default
+fontsize: 9pt
+urlcolor: blue
+header-includes:
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \usepackage{multimedia}
+- \newcommand{\subspace}[1]{\mathcal{#1}}    
+- \newcommand{\field}[1]{\mathbb{#1}}
+- \newcommand{\Reals}{\field{R}}
+- \newcommand{\Integers}{\field{Z}} 
+- \newcommand{\Naturals}{\field{N}}
+- \newcommand{\Complex}{\field{C}}
+- \newcommand{\Rationals}{\field{Q}}
+- \newcommand{\widebar}[1]{\overline{#1}}
+- \newcommand{\wig}[1]{\tilde{#1}}
+- \newcommand{\bigwig}[1]{\widetilde{#1}}
+- \newcommand{\pop}[1]{\mathcal{#1}}
+- \newcommand{\samp}[1]{\mathcal{#1}}
+- \newcommand{\given}{~\vline~}
+- \newcommand{\indep}{\bot\hspace{-.6em}\bot}
+- \newcommand{\notindep}{\bot\hspace{-.6em}\bot\hspace{-0.75em}/\hspace{.4em}}
+- \newcommand{\depend}{\Join}
+- \newcommand{\notdepend}{\Join\hspace{-0.9 em}/\hspace{.4em}}
+- \newcommand{\imply}{\Longrightarrow}
+- \newcommand{\notimply}{\Longrightarrow \hspace{-1.5em}/ \hspace{0.8em}}
+- \newcommand{\follows}{~\sim~}
+- \DeclareMathOperator*{\argmin}{arg\,min}
+- \DeclareMathOperator*{\argmax}{arg\,max}
+- \DeclareMathOperator*{\Ave}{Ave\,}
+- \DeclareMathOperator*{\median}{median\,}
+- \newcommand{\abs}[1]{\left\lvert{#1}\right\rvert}
+- \newcommand{\code}[1]{\texttt{#1}}
+- \newcommand*{\R}{\textsf{R}}
+- \newcommand*{\RStudio}{\textsf{RStudio}}
+- \newcommand*{\RMarkdown}{\textsf{RMarkdown}}
+- \newcommand*{\loon}{\textsf{loon}}
+- \newcommand*{\Loon}{\textsf{Loon}}
+- \newcommand*{\Grid}{\textsf{Grid}}
+- \newcommand*{\Python}{\textsf{Python}}
+- \newcommand*{\Tcl}{\textsf{Tcl}}
+- \newcommand{\pkg}[1]{\textsf{#1}}
+- \newcommand{\ve}[1]{\mathbf{#1}}         
+- \newcommand{\sv}[1]{\boldsymbol{#1}}   
+- \newcommand{\m}[1]{\mathbf{#1}}      
+- \newcommand{\sm}[1]{\boldsymbol{#1}}  
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \newcommand{\norm}[1]{||{#1}||}
+- \newcommand{\inverse}[1]{{#1}^{-1}}
+- \newcommand*{\mvec}{\operatorname{vec}}
+- \newcommand*{\trace}{\operatorname{trace}}
+- \newcommand*{\rank}{\operatorname{rank}}
+- \newcommand*{\diag}{\operatorname{diag}}
+- \newcommand*{\vspan}{\operatorname{span}}
+- \newcommand*{\rowsp}{\operatorname{rowsp}}
+- \newcommand*{\colsp}{\operatorname{colsp}}
+- \newcommand*{\svd}{\operatorname{svd}}
+- \newcommand{\degrees}{$^{\circ}$}
+- \newcommand{\union}{\cup}
+- \newcommand{\intersect}{\cap}
+- \newcommand{\nullset}{\varnothing}
+- \newcommand{\permpause}{\pause}
+- \newcommand{\togglepause}{}
+- \newcommand{\suchthat}{~:~}
+- \newcommand{\st}{~:~} 
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, 
+               warning = FALSE,
+               message = FALSE,
+               fig.align = "center", 
+               fig.width = 6, 
+               fig.height = 5,
+               out.height = "40%")
+set.seed(12314159)
+# Number of characters width in printing.
+options(width = 72)
+
+```
+
+**22 marks**
+
+In this question, the **meaning** of a confidence interval will be explored by simulation.
+
+Suppose we have the model that $Y_1$, $Y_2$, \ldots, $Y_n$ are independently and identically distributed $N(\mu, \sigma^2)$ and we wish to construct a 95% confidence interval for the unknown **parameter** $\mu$ from a sample of realized values $y_1$, $y_2$, \ldots, $y_n$.
+
+The standard **estimates** of $\mu$ and $\sigma$ are
+
+\[ \widehat{\mu} = \widebar{y} = \frac{1}{n} \sum_{i=1}^n y_i \]
+
+and 
+
+\[ \widehat{\sigma} =  \sqrt{ \frac{\sum_{i=1}^n (y_i - \widehat{\mu})^2}{n-1}} =
+\sqrt{ \frac{\sum_{i=1}^n (y_i - \widebar{y})^2}{n-1}} \]
+
+with corresponding **estimators**
+\[ \bigwig{\mu} = \widebar{Y} = \frac{1}{n} \sum_{i=1}^n Y_i \]
+
+and 
+
+\[ \bigwig{\sigma} =  \sqrt{ \frac{\sum_{i=1}^n (Y_i - \bigwig{\mu})^2}{n-1}}  =  \sqrt{ \frac{\sum_{i=1}^n (Y_i - \widebar{Y})^2}{n-1}} \]
+
+The interval
+
+\[ \left[\widehat{\mu} - c \frac{\widehat{\sigma}}{\sqrt{n}} ~ , ~ 
+    \widehat{\mu} + c \frac{\widehat{\sigma}}{\sqrt{n}} \right] \]
+    
+where $c$ is the constant such that for the Student t random variable on $n-1$ degrees of freedom
+\[ Pr(t_{n-1} \le c ) = 1 - \frac{\alpha}{2}  ~~~ \text{or equivalently} ~~~ Pr(\abs{t_{n-1}} \le c ) = 1 - \alpha.\]
+
+That is, $c = Q_{t_{n-1}}(1 - \frac{\alpha}{2})$ is the $p = 1 - \frac{\alpha}{2}$ quantile of a $t_{n-1}$ random variable.
+
+This interval is called a $100(1-\alpha)\%$ **confidence** interval because its random counterpart
+
+\[    \left[\bigwig{\mu} - c \times \bigwig{SD}(\bigwig{\mu}) ~ , ~ 
+    \bigwig{\mu} + c \times \bigwig{SD}(\bigwig{\mu}) \right] = \left[\bigwig{\mu} - c \frac{\bigwig{\sigma}}{\sqrt{n}} ~ , ~ 
+    \bigwig{\mu} + c \frac{\bigwig{\sigma}}{\sqrt{n}} \right] \]
+
+will contain (or cover) the true value $\mu$ with probability $(1 - \alpha)$.
+This is called its **coverage probability**.
+
+In this question, you are going to generate many random intervals and observe their empirical coverage.
+
+Before getting started, there is an \R{} function `t.test()` that will be of some value (See `help(t.test)`.)  
+
+For example,
+
+- `t.test(y, conf.level = 0.95)$conf.int` 
+
+   returns the $95\%$ confidence interval for $\mu$ based on the vector `y` of realizations $y_1, \ldots, y_n$ and
+
+- `t.test(y, mu = a)$p.value`
+
+  returns the $p$-value for testing the hypothesis $H_0: \mu = a$ against the "two sided" alternative $H_a: \mu \ne a$.
+
+
+Answer each of the following questions 
+**showing your code for every part**.
+
+\newpage
+a. **(4 marks)**  Complete the following function
+
+   ```{r, eval = FALSE}
+   conf.intervals <- function(mu = 0,           # true mean of normals
+                              sigma = 1,        # true sd of normals
+                              sampleSize = 100, # size of normal sample
+                              level = 0.95,     # confidence level
+                              nIntervals = 20   # number of intervals
+                              ){
+                              ...
+                              }
+    ```
+    
+    which returns a `data.frame` having `nIntervals` rows and two columns with variable names `lwr` and `upr` representing the lower and upper values of a $100 \times` `level` $\%$ confidence interval for $\mu$ based on a sample of size `sampleSize` from a normal distribution with mean `mu` and standard deviation `sigma`.
+    
+    Each row is a single confidence interval for on a different independent normal sample of size `sampleSize`.
+    
+    - show your code
+    
+    
+```{r}
+   conf.intervals <- function(mu = 0,           # true mean of normals
+                              sigma = 1,        # true sd of normals
+                              sampleSize = 100, # size of normal sample
+                              level = 0.95,     # confidence level
+                              nIntervals = 20   # number of intervals
+                              ){
+                               conf <- data.frame() 
+                               for (i in 1:nIntervals){
+                               samp <- rnorm(sampleSize, mu, sigma)
+                               c <- 
+                              conf[i,'lwr'] <- t.test(samp, 
+                              conf.level = level)$conf.int[[1]]
+                              conf[i,'upr'] <- t.test(samp, 
+                              conf.level = level)$conf.int[[2]]
+                               }
+                              conf
+                               }
+```
+   - show the output of your function by evaluating
+```{r}
+   set.seed(1234567)
+   head(conf.intervals(), 2)
+```
+
+\newpage      
+b. **(2 marks)**  Use the function you defined in (a) to construct a dataset of 100 $90%$ confidence intervals for $\mu$ from samples of size $n = 30$ from $N(\mu, \sigma^2)$ with $\mu = 10$ and $\sigma = 3$.  
+
+   Assign this data set to the variable `intervals90` as in
+
+   ```{r eval = FALSE}
+   intervals90 <- conf.intervals( ... ) # fill in arguments as appropriate.
+   ```
+   
+   and demonstrate the values using
+   ```{r, eval = FALSE}
+   ## Test
+   set.seed(1234567)
+   head(intervals90, 2)
+   ```
+   
+```{r}
+   intervals90 <- conf.intervals( mu = 10,           # true mean of normals
+                              sigma = 3,        # true sd of normals
+                              sampleSize = 30, # size of normal sample
+                              level = 0.90,     # confidence level
+                              nIntervals = 100)
+      
+```
+```{r}
+   set.seed(1234567)
+   head(intervals90, 2)
+```
+\newpage
+c. **(3 marks)** For the confidence intervals in `intervals90`, construct a plot showing each interval as a horizontal line segment showing the location of that interval.  For the $i$th confidence interval the line segment should have horizontal ($x$) values corresponding to its lower and upper values and vertical ($y$) values equal to $i$.
+
+   Add a single **red** vertical line at the true value of $\mu$.
+   
+   Hint: After defining the horizontal limits `xlim` and vertical limits `ylim` of the plot, you can begin plotting with an "empty" plot defined as follows
+   
+   ```{r eval = FALSE, fig.width = 4, fig.height = 6}
+   plot(0, type = "n", xlim = xlim, ylim = ylim,
+        xlab = "x", ylab = "interval number",
+        main = "90% confidence intervals")
+   ```
+   
+   The line segments for the confidence intervals can be added using `lines()` one at a time in a loop as for example  `for(i in 1:100) {lines(...)}`
+   
+```{r, echo = TRUE, fig.width = 4, fig.height = 6}
+   xlim <- c(min(intervals90$lwr), max(intervals90$upr))
+   ylim <- c(1,100)
+   plot(0, type = "b", xlim = xlim, ylim = ylim,
+        xlab = "x", ylab = "interval number",
+        main = "90% confidence intervals")
+   abline(v=10, col="red", lty=3, lwd=3)
+   for (i in 1:100){
+      lines(c(intervals90$lwr[i],intervals90$upr[i]), c(i,i), pch=19, type="b",
+            col = "steelblue")}
+  
+
+```
+
+\newpage   
+d. **(3 marks)** Write some code that counts the number of intervals in `intervals90` that cover the true value of $\mu$.  
+   
+   - how many cover $\mu$ ?
+   - does this makes sense?  Explain your reasoning.
+   
+```{r}
+   sum((intervals90$lwr <= 10) & (intervals90$upr >= 10))
+```
+     87
+    Yes, we can see in the plot above that 87 intervals in intervals90`
+    cover the true value of $\mu$ and 13 intervals in intervals90` do not
+    cover the true value of $\mu$. 13 is very close to 10, and 87 is 
+    very close to 90. Hence this count makes sense.
+    
+    
+    
+\newpage   
+e. **(3 marks)**  If $x$ is the number of $100(1 - \alpha)\%$ intervals covering the true value $\mu$ out of $m$ independently generated intervals, what is the probability distribution of $X$?
+
+   That is, what is
+
+   \[Pr(X = x) = ? \]
+   
+   Explain your reasoning.
+   
+Ans)   
+   There are two possible outcomes in this case, 
+   
+   1) intervals covering the true value $\mu$ 
+   
+   2) intervals  not covering the true value $\mu$ 
+   
+   
+   The probability distribution of $X$ is the binomial distribution because
+   only there are only two possible outcomes.
+   
+   
+   \[\therefore\binom{m}{x} = \frac{m!}{x!(m-x)!}\]
+   \[Pr(X = x) = \binom{m}{x} \ p^x \ (1-p)^{(m-x)} \]
+   
+
+
+\newpage
+f. **(3 marks)** Complete the following function
+
+   ```{r, eval = FALSE}
+   p.values <- function(mu = 0,           # true mean of normals
+                        sigma = 1,        # true sd of normals
+                        sampleSize = 100, # size of normal sample
+                        mu_0 = 0,         # hypothesized mean
+                        nSamples = 20     # number of samples
+                              ){
+                              ...
+                              }
+    ```
+    
+    which returns a `vector` of `nSamples` $p$-values for testing the hypothesis $H_0: \mu = \mu_0$ against the "two sided" alternative $H_a: \mu \ne \mu_0$ based on `nSamples` independent samples of size `sampleSize` from a normal distribution with true mean `mu` and true standard deviation `sigma`.
+    
+    Each element of the vector returned is a single $p$-value testing $H_0: \mu = \mu_0$ against the "two sided" alternative $H_a: \mu \ne \mu_0$ based on a different independent normal sample of size `sampleSize`.  There will be `nSamples` elements.
+    
+    - show your code
+      
+```{r}
+
+   p.values <- function(mu = 0,        # true mean of normals
+                        sigma = 1,        # true sd of normals
+                        sampleSize = 100, # size of normal sample
+                        mu_0 = 0,         # hypothesized mean
+                        nSamples = 20     # number of samples
+                        ){
+   pv <- rep(0, nSamples)
+         for(i in 1:nSamples){
+            samp <- rnorm(sampleSize, mu, sigma)
+            pv[i] <- t.test(samp, mu = mu_0)$p.value
+   }
+   return (pv)
+   }
+```
+    - show the output of your function by evaluating
+
+```{r}
+   set.seed(1234567)
+   head(p.values(), 2)
+```      
+\newpage
+g. **(3 marks)** Get the $p$-values for 1000 samples, each of size 50,  drawn from $N(10, 9)$ where on each sample the hypothesis $H_0: \mu = 10$ is tested against the two-sided alternative.  Save the result as the variable `pvals`.
+
+   Draw a histogram of the `pvals` you just constructed.
+
+   - describe the distribution
+   - does this make sense?  Why? Or Why not?
+   
+```{r, echo = TRUE}
+   pvals <- p.values(mu = 10,        # true mean of normals
+                        sigma = 9,        # true sd of normals
+                        sampleSize = 50, # size of normal sample
+                        mu_0 = 10,         # hypothesized mean
+                        nSamples = 1000)     # number of samples
+   hist(as.numeric(pvals), xlab = "p-values", breaks = 15,
+   main = " p-values when mu=10 
+        and n=50")
+```
+Ans) The p-values seem to be uniformly spread out according to the above histogram.
+The frequency of all p-value intervals is high.
+
+This graph makes sense because the p-values would look like this if all the 
+hypotheses were null. Though, there could be a small percentage of hypothesis 
+that are not null.
+
+\newpage
+h. **(4 marks)** Repeat part (g) but this time test the hypothesis $H_0: \mu = 11$. In addition, what do you imagine this histogram would look like if the size of each sample was $n = 100$ instead of $n = 50$.
+
+```{r, echo = TRUE}
+   pvals <- p.values(mu = 10,        # true mean of normals
+                        sigma = 9,        # true sd of normals
+                        sampleSize = 50, # size of normal sample
+                        mu_0 = 11,         # hypothesized mean
+                        nSamples = 1000)     # number of samples
+   hist(as.numeric(pvals), xlab = "p-values", breaks = 15,
+   main = " p-values when mu=11 
+        and n=50")
+```
+Ans) In the above histogram, with the increase in p-value, the frequency gets lower,
+the first two intervals of p-value has the highest frequency, and the subsequent
+p-values have considerably lower frequency.
+
+The graph makes sense because there seems to be a flat distribution of
+the p-value at the bottom, which is the null hypothesis, and they seem to be 
+uniformly distributed between 0 and 1. The p-values with the higher 
+frequency close to 0 is where the alternative hypotheses could be
+located.
+
+
+If n was 100 instead the 50, the histogram would look the same, with the first
+few p-values having much higher frequency than the above graph, and the 
+subsequent p-values would have considerably lower frequency.
